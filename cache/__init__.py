@@ -23,8 +23,9 @@ def memoize(f):
 
 
 class Storage:
-    def __init__(self, directory):
+    def __init__(self, directory, verbose = True):
         self.directory = directory
+        self.verbose   = verbose
 
     def load(self, fn):
         extension = splitext(fn)[1]
@@ -78,7 +79,7 @@ class Storage:
                 os.makedirs(dirname(cache_fn), exist_ok=True)
 
                 if exists(cache_fn):
-                    if verbose:
+                    if verbose and self.verbose:
                         print("Loading from cache:", cache_fn)
                     return load(*args, **kwargs)
 
