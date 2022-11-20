@@ -1,7 +1,7 @@
 from inspect   import getfullargspec
 from functools import wraps
 from os.path   import join, exists, dirname, splitext
-import string, os, pickle
+import string, os, dill
 
 import joblib
 
@@ -35,7 +35,7 @@ class Storage:
             elif extension == '.npz':
                 return dict(np.load(fo))       # dict to force read
             else:
-                return pickle.load(fo)
+                return dill.load(fo)
 
     def save(self, fn, result):
         extension = splitext(fn)[1]
@@ -45,11 +45,12 @@ class Storage:
             elif extension == '.npz':
                 np.savez_compressed(fo, **result)
             else:
-                pickle.dump(result, fo)
+                dill.dump(result, fo)
 
     def cache(self, fn_format_string, hash = [], transform = {}, verbose = True):
         arg_names = [x[1] for x in string.Formatter().parse(fn_format_string) if x[1] is not None]
 
+        # TODO: need to correctly handle keyword-only arguments
         def decorator(f):
             argspec = getfullargspec(f)
             arg_indices = [argspec.args.index(name) for name in arg_names]

@@ -10,6 +10,7 @@ joblib = "*"
 atomicwrites = "*"
 numpy = "*"
 decorator = "*"
+dill = "^0.3.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
