@@ -2,6 +2,7 @@ from inspect   import getfullargspec
 from functools import wraps
 from os.path   import join, exists, dirname, splitext
 import string, os, dill
+import sys
 
 import joblib
 
@@ -50,18 +51,22 @@ class Storage:
     def cache(self, fn_format_string, hash = [], transform = {}, verbose = True):
         arg_names = [x[1] for x in string.Formatter().parse(fn_format_string) if x[1] is not None]
 
-        # TODO: need to correctly handle keyword-only arguments
         def decorator(f):
             argspec = getfullargspec(f)
-            arg_indices = [argspec.args.index(name) for name in arg_names]
+            arg_indices = { name : argspec.args.index(name) for name in arg_names if name in argspec.args }
 
             def filename(*args, **kwargs):
                 values = {}
-                for (index, name) in zip(arg_indices, arg_names):
-                    try:
-                        value = args[index]
-                    except IndexError:
+                for name in arg_names:
+                    if name in kwargs:
                         value = kwargs[name]
+                    else:
+                        try:
+                            index = arg_indices[name]
+                            value = args[index]
+                        except:
+                            print(f"Couldn't find positional argument {name} needed for {fn_format_string}", file=sys.stderr)
+                            raise
 
                     if name in hash:
                         value = joblib.hash(value)
